@@ -1,49 +1,172 @@
 run_ucf =  python3 main.py -d ucf-cc-50
 run_shanghai = python3 main.py -d shanghai-tech
 
-all: ucf shanghai
+# UCF-CC-50 DATASET
+# augment data of ucf-cc-50, run this just once
+augment-ucf: augment-ucf-same augment-ucf-knn augment-ucf-face
+augment-ucf-same:
+	$(run_ucf) --augment-only --force-augment --force-den-maps --gt-mode same
+augment-ucf-knn:
+	$(run_ucf) --augment-only --force-augment --force-den-maps --gt-mode knn
+augment-ucf-face:
+	#python3 tiny_detection_mxnet.py -d ucf-cc-50 --save-plots --root-dir /workspace/quispe
+	$(run_ucf) --augment-only --force-augment --force-den-maps --gt-mode face
 
-#UCF-CC-50 DATASET
-ucf: augment-ucf train-ucf-fold1 train-ucf-fold2 train-ucf-fold3 train-ucf-fold4 train-ucf-fold5
+train-ucf-mcnn1-same:
+	$(run_ucf) --train-batch 32 --save-dir log/mcnn1 --gt-mode same --model mcnn1
+test-ucf-mcnn1-same: 
+	$(run_ucf) --evaluate-only --save-plots --save-dir log/mcnn1/ --resume log/mcnn1/ucf-cc-50_people_thr_0_gt_mode_same/ --gt-mode same --model mcnn1
 
-augment-ucf: #augment data of ucf-cc-50, do this just once
-	$(run_ucf) --augment-only --force-augment --force-den-maps
+train-ucf-mcnn1-knn:
+	$(run_ucf) --train-batch 32 --save-dir log/mcnn1 --gt-mode knn --model mcnn1
+test-ucf-mcnn1-knn:
+	$(run_ucf) --evaluate-only --save-plots --save-dir log/mcnn1/ --resume log/mcnn1/ucf-cc-50_people_thr_0_gt_mode_knn/ --gt-mode knn --model mcnn1
 
-train-ucf-fold1: #train fold 1 of ucf-cc-50 dataset
-	$(run_ucf) --units ucf-fold1 --train-batch 32 --save-dir log/multi-stream
-train-ucf-fold2: #train fold 2 of ucf-cc-50 dataset
-	$(run_ucf) --units ucf-fold2 --train-batch 32 --save-dir log/multi-stream
-train-ucf-fold3: #train fold 3 of ucf-cc-50 dataset
-	$(run_ucf) --units ucf-fold3 --train-batch 32 --save-dir log/multi-stream
-train-ucf-fold4: #train fold 4 of ucf-cc-50 dataset
-	$(run_ucf) --units ucf-fold4 --train-batch 32 --save-dir log/multi-stream
-train-ucf-fold5: #train fold 5 of ucf-cc-50 dataset
-	$(run_ucf) --units ucf-fold5 --train-batch 32 --save-dir log/multi-stream
+train-ucf-mcnn1-face:
+	$(run_ucf) --train-batch 32 --save-dir log/mcnn1 --gt-mode face --model mcnn1
+test-ucf-mcnn1-face: 
+	$(run_ucf) --evaluate-only --save-plots --save-dir log/mcnn1/ --resume log/mcnn1/ucf-cc-50_people_thr_0_gt_mode_face/ --gt-mode face --model mcnn1
 
-test-ucf-fold1: #test fold 1 of ucf-cc-50 dataset
-	$(run_ucf) --units ucf-fold1 --save-dir log/multi-stream --resume log/multi-stream/ucf-cc-50_people_thr_0_gt_mode_same/ --evaluate-only --save-plots
-test-ucf-fold2: #test fold 2 of ucf-cc-50 dataset
-	$(run_ucf) --units ucf-fold2 --save-dir log/multi-stream --resume log/multi-stream/ucf-cc-50_people_thr_0_gt_mode_same/ --evaluate-only --save-plots
-test-ucf-fold3: #test fold 3 of ucf-cc-50 dataset
-	$(run_ucf) --units ucf-fold3 --save-dir log/multi-stream --resume log/multi-stream/ucf-cc-50_people_thr_0_gt_mode_same/ --evaluate-only --save-plots
-test-ucf-fold4: #test fold 4 of ucf-cc-50 dataset
-	$(run_ucf) --units ucf-fold4 --save-dir log/multi-stream --resume log/multi-stream/ucf-cc-50_people_thr_0_gt_mode_same/ --evaluate-only --save-plots
-test-ucf-fold5: #test fold 5 of ucf-cc-50 dataset
-	$(run_ucf) --units ucf-fold5 --save-dir log/multi-stream --resume log/multi-stream/ucf-cc-50_people_thr_0_gt_mode_same/ --evaluate-only --save-plots
+train-ucf-mcnn2-same:
+	$(run_ucf) --train-batch 32 --save-dir log/mcnn2 --gt-mode same --model mcnn2
+test-ucf-mcnn2-same:
+	$(run_ucf) --evaluate-only --save-plots --save-dir log/mcnn2/ --resume log/mcnn2/ucf-cc-50_people_thr_0_gt_mode_same/ --gt-mode same --model mcnn2
 
-#SHANGHAI-TECH DATASET
-shanghai: augment-shanghai train-shanghai-partA train-shanghai-partB test-shanghai-partA test-shanghai-partB
+train-ucf-mcnn2-knn:
+	$(run_ucf) --train-batch 32 --save-dir log/mcnn2 --gt-mode knn --model mcnn2
+test-ucf-mcnn2-knn:
+	$(run_ucf) --evaluate-only --save-plots --save-dir log/mcnn2/ --resume log/mcnn2/ucf-cc-50_people_thr_0_gt_mode_knn/ --gt-mode knn --model mcnn2
 
-augment-shanghai: #augment data of Shanghai Tech, do this just once
-	$(run_shanghai) --augment-only
+train-ucf-mcnn2-face:
+	$(run_ucf) --train-batch 32 --save-dir log/mcnn2 --gt-mode face --model mcnn2
+test-ucf-mcnn2-face:
+	$(run_ucf) --evaluate-only --save-plots --save-dir log/mcnn2/ --resume log/mcnn2/ucf-cc-50_people_thr_0_gt_mode_face/ --gt-mode face --model mcnn2
 
-train-shanghai-partA: #train part A of Shanghai Tech dataset
-	$(run_shanghai) --units shanghai-partA --train-batch 32 --save-dir log/multi-stream
-train-shanghai-partB: #train part B of Shanghai Tech dataset 
-	$(run_shanghai) --units shanghai-partB --train-batch 32 --save-dir log/multi-stream
+train-ucf-mcnn3-same:
+	$(run_ucf) --train-batch 32 --save-dir log/mcnn3 --gt-mode same --model mcnn3
+test-ucf-mcnn3-same:
+	$(run_ucf) --evaluate-only --save-plots --save-dir log/mcnn3/ --resume log/mcnn3/ucf-cc-50_people_thr_0_gt_mode_same/ --gt-mode same --model mcnn3
 
-test-shanghai-partA: #test part A of Shanghai Tech dataset
-	$(run_shanghai) --units shanghai-partA --save-dir log/multi-stream --resume log/multi-stream/shanghai-tech_people_thr_0_gt_mode_same/ --evaluate-only --save-plots
-test-shanghai-partB: #test part B of Shanghai Tech dataset 
-	$(run_shanghai) --units shanghai-partB --save-dir log/multi-stream --resume log/multi-stream/shanghai-tech_people_thr_0_gt_mode_same/ --evaluate-only --save-plots
+train-ucf-mcnn3-knn:
+	$(run_ucf) --train-batch 32 --save-dir log/mcnn3 --gt-mode knn --model mcnn3
+test-ucf-mcnn3-knn: 
+	$(run_ucf) --evaluate-only --save-plots --save-dir log/mcnn3/ --resume log/mcnn3/ucf-cc-50_people_thr_0_gt_mode_knn/ --gt-mode knn --model mcnn3
 
+train-ucf-mcnn3-face:
+	$(run_ucf) --train-batch 32 --save-dir log/mcnn3 --gt-mode face --model mcnn3
+test-ucf-mcnn3-face:
+	$(run_ucf) --evaluate-only --save-plots --save-dir log/mcnn3/ --resume log/mcnn3/ucf-cc-50_people_thr_0_gt_mode_face/ --gt-mode face --model mcnn3
+
+train-ucf-mcnn4-same:
+	$(run_ucf) --train-batch 32 --save-dir log/mcnn4 --gt-mode same --model mcnn4
+test-ucf-mcnn4-same:
+	$(run_ucf) --evaluate-only --save-plots --save-dir log/mcnn4/ --resume log/mcnn4/ucf-cc-50_people_thr_0_gt_mode_same/ --gt-mode same --model mcnn4
+
+train-ucf-mcnn4-knn:
+	$(run_ucf) --train-batch 32 --save-dir log/mcnn4 --gt-mode knn --model mcnn4
+test-ucf-mcnn4-knn:
+	$(run_ucf) --evaluate-only --save-plots --save-dir log/mcnn4/ --resume log/mcnn4/ucf-cc-50_people_thr_0_gt_mode_knn/ --gt-mode knn --model mcnn4
+
+train-ucf-mcnn4-face:
+	$(run_ucf) --train-batch 32 --save-dir log/mcnn4 --gt-mode face --model mcnn4
+test-ucf-mcnn4-face:
+	$(run_ucf) --evaluate-only --save-plots --save-dir log/mcnn4/ --resume log/mcnn4/ucf-cc-50_people_thr_0_gt_mode_face/ --gt-mode face --model mcnn4
+
+# SHANGHAI-TECH DATASET
+# augment data of Shanghai Tech, do this just once
+augment-shanghai: augment-shanghai-same augment-shanghai-knn augment-shanghai-face
+augment-shanghai-same:
+	$(run_shanghai) --augment-only --force-augment --force-den-maps --gt-mode same
+augment-shanghai-knn:
+	$(run_shanghai) --augment-only --force-augment --force-den-maps --gt-mode knn
+augment-shanghai-face:
+	#python3 tiny_detection_mxnet.py -d shanghai-tech --save-plots --root-dir /workspace/quispe
+	$(run_shanghai) --augment-only --force-augment --force-den-maps --gt-mode face
+
+train-shanghai-mcnn1-same:
+	$(run_shanghai)  --train-batch 32 --save-dir log/mcnn1 --gt-mode same --model mcnn1
+test-shanghai-mcnn1-same:
+	$(run_shanghai) --save-dir log/mcnn1 --resume log/multi-stream/shanghai-tech_people_thr_0_gt_mode_same/ --evaluate-only --save-plots --gt-mode same --model mcnn1
+
+train-shanghai-mcnn1-knn:
+	$(run_shanghai)  --train-batch 32 --save-dir log/mcnn1 --gt-mode knn --model mcnn1
+test-shanghai-mcnn1-knn:
+	$(run_shanghai) --save-dir log/mcnn1 --resume log/multi-stream/shanghai-tech_people_thr_0_gt_mode_knn/ --evaluate-only --save-plots --gt-mode knn --model mcnn1
+
+train-shanghai-mcnn1-face:
+	$(run_shanghai)  --train-batch 32 --save-dir log/mcnn1 --gt-mode face --model mcnn1
+test-shanghai-mcnn1-face:
+	$(run_shanghai) --save-dir log/mcnn1 --resume log/multi-stream/shanghai-tech_people_thr_0_gt_mode_face/ --evaluate-only --save-plots --gt-mode face --model mcnn1
+
+train-shanghai-mcnn2-same:
+	$(run_shanghai)  --train-batch 32 --save-dir log/mcnn2 --gt-mode same --model mcnn2
+test-shanghai-mcnn2-same:
+	$(run_shanghai) --save-dir log/mcnn2 --resume log/multi-stream/shanghai-tech_people_thr_0_gt_mode_same/ --evaluate-only --save-plots --gt-mode same --model mcnn2
+
+train-shanghai-mcnn2-knn:
+	$(run_shanghai)  --train-batch 32 --save-dir log/mcnn2 --gt-mode knn --model mcnn2
+test-shanghai-mcnn2-knn:
+	$(run_shanghai) --save-dir log/mcnn2 --resume log/multi-stream/shanghai-tech_people_thr_0_gt_mode_knn/ --evaluate-only --save-plots --gt-mode knn --model mcnn2
+
+train-shanghai-mcnn2-face:
+	$(run_shanghai)  --train-batch 32 --save-dir log/mcnn2 --gt-mode face --model mcnn2
+test-shanghai-mcnn2-face:
+	$(run_shanghai) --save-dir log/mcnn2 --resume log/multi-stream/shanghai-tech_people_thr_0_gt_mode_face/ --evaluate-only --save-plots --gt-mode face --model mcnn2
+
+train-shanghai-mcnn3-same:
+	$(run_shanghai)  --train-batch 32 --save-dir log/mcnn3 --gt-mode same --model mcnn3
+test-shanghai-mcnn3-same:
+	$(run_shanghai) --save-dir log/mcnn3 --resume log/multi-stream/shanghai-tech_people_thr_0_gt_mode_same/ --evaluate-only --save-plots --gt-mode same --model mcnn3
+
+train-shanghai-mcnn3-knn:
+	$(run_shanghai)  --train-batch 32 --save-dir log/mcnn3 --gt-mode knn --model mcnn3
+test-shanghai-mcnn3-knn:
+	$(run_shanghai) --save-dir log/mcnn3 --resume log/multi-stream/shanghai-tech_people_thr_0_gt_mode_knn/ --evaluate-only --save-plots --gt-mode knn --model mcnn3
+
+train-shanghai-mcnn3-face:
+	$(run_shanghai)  --train-batch 32 --save-dir log/mcnn3 --gt-mode face --model mcnn3
+test-shanghai-mcnn3-face:
+	$(run_shanghai) --save-dir log/mcnn3 --resume log/multi-stream/shanghai-tech_people_thr_0_gt_mode_face/ --evaluate-only --save-plots --gt-mode face --model mcnn3
+
+train-shanghai-mcnn4-same:
+	$(run_shanghai)  --train-batch 32 --save-dir log/mcnn4 --gt-mode same --model mcnn4
+test-shanghai-mcnn4-same:
+	$(run_shanghai) --save-dir log/mcnn4 --resume log/multi-stream/shanghai-tech_people_thr_0_gt_mode_same/ --evaluate-only --save-plots --gt-mode same --model mcnn4
+
+train-shanghai-mcnn4-knn:
+	$(run_shanghai)  --train-batch 32 --save-dir log/mcnn4 --gt-mode knn --model mcnn4
+test-shanghai-mcnn4-knn:
+	$(run_shanghai) --save-dir log/mcnn4 --resume log/multi-stream/shanghai-tech_people_thr_0_gt_mode_knn/ --evaluate-only --save-plots --gt-mode knn --model mcnn4
+
+train-shanghai-mcnn4-face:
+	$(run_shanghai)  --train-batch 32 --save-dir log/mcnn4 --gt-mode face --model mcnn4
+test-shanghai-mcnn4-face:
+	$(run_shanghai) --save-dir log/mcnn4 --resume log/multi-stream/shanghai-tech_people_thr_0_gt_mode_face/ --evaluate-only --save-plots --gt-mode face --model mcnn4
+
+debug:
+	$(run_ucf) --train-batch 32 --save-dir log/tmp --gt-mode same --max-epoch 1 --model mcnn1
+	$(run_shanghai) --train-batch 32 --save-dir log/tmp --gt-mode same --max-epoch 1 --model mcnn1
+	$(run_ucf) --train-batch 32 --save-dir log/tmp --gt-mode same --max-epoch 1 --model mcnn2
+	$(run_shanghai) --train-batch 32 --save-dir log/tmp --gt-mode same --max-epoch 1 --model mcnn2
+	$(run_ucf) --train-batch 32 --save-dir log/tmp --gt-mode same --max-epoch 1 --model mcnn3
+	$(run_shanghai) --train-batch 32 --save-dir log/tmp --gt-mode same --max-epoch 1 --model mcnn3
+	$(run_ucf) --train-batch 32 --save-dir log/tmp --gt-mode same --max-epoch 1 --model mcnn4
+	$(run_shanghai) --train-batch 32 --save-dir log/tmp --gt-mode same --max-epoch 1 --model mcnn4
+
+	$(run_ucf) --train-batch 32 --save-dir log/tmp --gt-mode knn --max-epoch 1 --model mcnn1
+	$(run_shanghai) --train-batch 32 --save-dir log/tmp --gt-mode knn --max-epoch 1 --model mcnn1
+	$(run_ucf) --train-batch 32 --save-dir log/tmp --gt-mode knn --max-epoch 1 --model mcnn2
+	$(run_shanghai) --train-batch 32 --save-dir log/tmp --gt-mode knn --max-epoch 1 --model mcnn2
+	$(run_ucf) --train-batch 32 --save-dir log/tmp --gt-mode knn --max-epoch 1 --model mcnn3
+	$(run_shanghai) --train-batch 32 --save-dir log/tmp --gt-mode knn --max-epoch 1 --model mcnn3
+	$(run_ucf) --train-batch 32 --save-dir log/tmp --gt-mode knn --max-epoch 1 --model mcnn4
+	$(run_shanghai) --train-batch 32 --save-dir log/tmp --gt-mode knn --max-epoch 1 --model mcnn4
+
+	$(run_ucf) --train-batch 32 --save-dir log/tmp --gt-mode face --max-epoch 1 --model mcnn1
+	$(run_shanghai) --train-batch 32 --save-dir log/tmp --gt-mode face --max-epoch 1 --model mcnn1
+	$(run_ucf) --train-batch 32 --save-dir log/tmp --gt-mode face --max-epoch 1 --model mcnn2
+	$(run_shanghai) --train-batch 32 --save-dir log/tmp --gt-mode face --max-epoch 1 --model mcnn2
+	$(run_ucf) --train-batch 32 --save-dir log/tmp --gt-mode face --max-epoch 1 --model mcnn3
+	$(run_shanghai) --train-batch 32 --save-dir log/tmp --gt-mode face --max-epoch 1 --model mcnn3
+	$(run_ucf) --train-batch 32 --save-dir log/tmp --gt-mode face --max-epoch 1 --model mcnn4
+	$(run_shanghai) --train-batch 32 --save-dir log/tmp --gt-mode face --max-epoch 1 --model mcnn4

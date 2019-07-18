@@ -2,6 +2,8 @@
 .vscode
 data/
 log/
+hr101-*
+hr_res101.mat
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
