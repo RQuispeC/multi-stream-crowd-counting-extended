@@ -24,17 +24,18 @@ parser.add_argument('-d', '--dataset', type=str, default='ucf-cc-50',
 parser.add_argument('--force-den-maps', action='store_true', help="force generation of density maps for original dataset, by default it is generated only once")
 parser.add_argument('--force-augment', action='store_true', help="force generation of augmented data, by default it is generated only once")
 parser.add_argument('--displace', default=70, type=int,help="displacement for sliding window in data augmentation, default 70")
-parser.add_argument('--size-x', default=300, type=int, help="width of sliding window in data augmentation, default 300")
-parser.add_argument('--size-y', default=200, type=int, help="height of sliding window in data augmentation, default 200")
+parser.add_argument('--size-x', default=256, type=int, help="width of sliding window in data augmentation, default 300")
+parser.add_argument('--size-y', default=256, type=int, help="height of sliding window in data augmentation, default 200")
 parser.add_argument('--people-thr', default=0, type=int, help="minimum quantitie of people in each sliding window in data augmentation, default 0")
 parser.add_argument('--not-augment-noise', action='store_true', help="use noise for data augmetnation, default True")
 parser.add_argument('--not-augment-light', action='store_true', help="use bright & contrast for data augmetnation, default True")
 parser.add_argument('--bright', default=10, type=int, help="bright value for bright & contrast augmentation, defaul 10")
 parser.add_argument('--contrast', default=10, type=int, help="contrast value for bright & contrast augmentation, defaul 10")
-parser.add_argument('--gt-mode', type=str, default='same', help="mode for generation of ground thruth. Current version supports only 'same' mode")
+parser.add_argument('--gt-mode', type=str, default='same', help="mode for generation of ground thruth  ['same', 'face', 'knn'] (default 'same')")
+parser.add_argument('--model', type=str, default='mcnn-1', help="network model  ['mcnn1', 'mcnn2', 'mcnn3', 'mcnn4'] (default 'mcnn-1')")
 
 # Optimization options
-parser.add_argument('--max-epoch', default=1200, type=int,
+parser.add_argument('--max-epoch', default=1000, type=int,
                     help="maximum epochs to run")
 parser.add_argument('--start-epoch', default=0, type=int,
                     help="manual epoch number (useful on restarts)")
@@ -50,12 +51,15 @@ parser.add_argument('--units', type=str, default='', help="folds/parts units to 
 parser.add_argument('--augment-only', action='store_true', help="run only data augmentation, default False")
 parser.add_argument('--evaluate-only', action='store_true', help="run only data validation, --resume arg is needed, default False")
 parser.add_argument('--save-plots', action='store_true', help="save plots of density map estimation (done only in test step), default False")
+parser.add_argument('--den-scale-factor', type=float, default=1e3, help="scale factor to increasse small values in density maps")
 
 args = parser.parse_args()
 
 def train(train_test_unit, out_dir_root):
     output_dir = osp.join(out_dir_root, train_test_unit.metadata['name'])
     mkdir_if_missing(output_dir)
+    output_dir_model = osp.join(output_dir, 'models')
+    mkdir_if_missing(output_dir_model)
     sys.stdout = Logger(osp.join(output_dir, 'log_train.txt'))
     print("==========\nArgs:{}\n==========".format(args))
 
@@ -81,7 +85,7 @@ def train(train_test_unit, out_dir_root):
         torch.cuda.manual_seed(rand_seed)
 
     # load net
-    net = CrowdCounter()
+    net = CrowdCounter(model = args.model)
     if not args.resume :
         network.weights_normal_init(net, dev=0.01)
     else:
@@ -116,13 +120,16 @@ def train(train_test_unit, out_dir_root):
             step = step + args.train_batch
             im_data = blob['data']
             gt_data = blob['gt_density']
-            im_data_norm = im_data / 255.0
+            im_data_norm = im_data / 127.5 - 1. #normalize between -1 and 1
+            gt_data *= args.den_scale_factor
             density_map = net(im_data_norm, gt_data = gt_data)
             loss = net.loss
             loss.backward()
             optimizer.step()
             train_loss += loss.data.item()
             density_map = density_map.data.cpu().numpy()
+            density_map/=args.den_scale_factor
+            gt_data/=args.den_scale_factor
 
             step_cnt += 1
             if step % disp_interval == 0:
@@ -131,19 +138,19 @@ def train(train_test_unit, out_dir_root):
                 train_batch_size = gt_data.shape[0]
                 gt_count = np.sum(gt_data.reshape(train_batch_size, -1), axis = 1)
                 et_count = np.sum(density_map.reshape(train_batch_size, -1), axis = 1)
-    
+
                 print("epoch: {0}, step {1}/{5}, Time: {2:.4f}s, gt_cnt[0]: {3:.4f}, et_cnt[0]: {4:.4f}, mean_diff: {6:.4f}".format(epoch, step, 1./fps, gt_count[0],et_count[0], data_loader.num_samples, np.mean(np.abs(gt_count - et_count))))
-                re_cnt = True    
-        
+                re_cnt = True
+
             if re_cnt:
                 t.tic()
                 re_cnt = False
 
-        save_name = os.path.join(output_dir, '{}_{}_{}.h5'.format(train_test_unit.to_string(), dataset_name,epoch))
+        save_name = os.path.join(output_dir_model, '{}_{}_{}.h5'.format(train_test_unit.to_string(), dataset_name,epoch))
         network.save_net(save_name, net)
 
         #calculate error on the validation dataset 
-        mae,mse = evaluate_model(save_name, data_loader_val, save_test_results=args.save_plots, plot_save_dir=osp.join(output_dir, 'plot-results-train/'))
+        mae,mse = evaluate_model(save_name, data_loader_val, model = args.model, save_test_results=args.save_plots, plot_save_dir=osp.join(output_dir, 'plot-results-train/'), den_scale_factor = args.den_scale_factor)
         if mae < best_mae:
             best_mae = mae
             best_mse = mse
@@ -173,7 +180,7 @@ def test(train_test_unit, out_dir_root):
     print("Using {} for testing.".format(pretrained_model))
 
     data_loader = ImageDataLoader(val_path, val_gt_path, shuffle=False, batch_size=1)
-    mae,mse = evaluate_model(pretrained_model, data_loader, save_test_results=args.save_plots, plot_save_dir=osp.join(output_dir, 'plot-results-test/'))
+    mae,mse = evaluate_model(pretrained_model, data_loader, model = args.model, save_test_results=args.save_plots, plot_save_dir=osp.join(output_dir, 'plot-results-test/'), den_scale_factor = args.den_scale_factor)
 
     print("MAE: {0:.4f}, MSE: {1:.4f}".format(mae, mse))
 

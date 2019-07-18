@@ -1,3 +1,6 @@
+from __future__ import absolute_import
+from __future__ import division
+
 import numpy as np
 import cv2
 import os
@@ -58,10 +61,6 @@ class ImageDataLoader():
             blob['fname'] = np.array(fnames)
             blob['idx'] = np.array(idx)
             yield blob
-            
+
     def get_num_samples(self):
         return self.num_samples
-                
-        
-            
-        

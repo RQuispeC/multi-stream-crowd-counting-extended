@@ -1,4 +1,6 @@
-from __future__ import print_function, absolute_import
+from __future__ import absolute_import
+from __future__ import division
+
 import os
 import glob
 import re
@@ -51,10 +53,11 @@ class train_test_unit(object):
 """Crowd counting dataset"""
 
 class UCF_CC_50(object):
-    root = 'data/ucf_cc_50/'
+    root = '/workspace/quispe/ucf_cc_50'
     ori_dir = osp.join(root, 'UCF_CC_50')
     ori_dir_lab = osp.join(ori_dir, 'labels')
     ori_dir_img = osp.join(ori_dir, 'images')
+    ori_dir_fac = osp.join(ori_dir, 'faces')
 
     ori_dir_den = osp.join(ori_dir, 'density_maps') #.npy files of density maps matrices
     augmented_dir = ""
@@ -62,7 +65,7 @@ class UCF_CC_50(object):
     signature_args = ['people_thr', 'gt_mode']
     metadata = dict()
     train_test_size = 5
-    
+
     def __init__(self, force_create_den_maps = False, force_augmentation = False, **kwargs):
         self._check_before_run()
         self.metadata = kwargs
@@ -74,7 +77,7 @@ class UCF_CC_50(object):
             os.makedirs(self.ori_dir_den)
         elif not force_create_den_maps:
             return
-        create_density_map(self.ori_dir_img, self.ori_dir_lab, self.ori_dir_den, mode = self.metadata['gt_mode'])
+        create_density_map(self.ori_dir_img, self.ori_dir_lab, self.ori_dir_den, self.ori_dir_fac, mode = self.metadata['gt_mode'])
 
     def _check_before_run(self):
         """Check if all files are available before going deeper"""
@@ -165,22 +168,26 @@ class UCF_CC_50(object):
                 copy_to_directory(test_img_paths, fold_test_dir_img)
 
 class ShanghaiTech(object):
-    root = 'data/ShanghaiTech/'
+    root = '/workspace/quispe/ShanghaiTech/'
     ori_dir_partA = osp.join(root, 'part_A')
     ori_dir_partA_train = osp.join(ori_dir_partA, 'train_data')
     ori_dir_partA_train_mat = osp.join(ori_dir_partA_train, 'ground-truth')
     ori_dir_partA_train_img = osp.join(ori_dir_partA_train, 'images')
+    ori_dir_partA_train_fac = osp.join(ori_dir_partA_train, 'faces')
     ori_dir_partA_test = osp.join(ori_dir_partA, 'test_data')
     ori_dir_partA_test_mat = osp.join(ori_dir_partA_test, 'ground-truth')
     ori_dir_partA_test_img = osp.join(ori_dir_partA_test, 'images')
+    ori_dir_partA_test_fac = osp.join(ori_dir_partA_test, 'faces')
 
     ori_dir_partB = osp.join(root, 'part_B')
     ori_dir_partB_train = osp.join(ori_dir_partB, 'train_data')
     ori_dir_partB_train_mat = osp.join(ori_dir_partB_train, 'ground-truth')
     ori_dir_partB_train_img = osp.join(ori_dir_partB_train, 'images')
+    ori_dir_partB_train_fac = osp.join(ori_dir_partB_train, 'faces')
     ori_dir_partB_test = osp.join(ori_dir_partB, 'test_data')
     ori_dir_partB_test_mat = osp.join(ori_dir_partB_test, 'ground-truth')
     ori_dir_partB_test_img = osp.join(ori_dir_partB_test, 'images')
+    ori_dir_partB_test_fac = osp.join(ori_dir_partB_test, 'faces')
 
     #to be computed
     ori_dir_partA_train_lab = osp.join(ori_dir_partA_train, 'labels')
@@ -219,10 +226,10 @@ class ShanghaiTech(object):
             mkdir_if_missing(self.ori_dir_partB_test_den)
         elif not force_create_den_maps:
             return
-        create_density_map(self.ori_dir_partA_train_img, self.ori_dir_partA_train_lab, self.ori_dir_partA_train_den, mode = self.metadata['gt_mode'])
-        create_density_map(self.ori_dir_partA_test_img, self.ori_dir_partA_test_lab, self.ori_dir_partA_test_den, mode = self.metadata['gt_mode'])
-        create_density_map(self.ori_dir_partB_train_img, self.ori_dir_partB_train_lab, self.ori_dir_partB_train_den, mode = self.metadata['gt_mode'])
-        create_density_map(self.ori_dir_partB_test_img, self.ori_dir_partB_test_lab, self.ori_dir_partB_test_den, mode = self.metadata['gt_mode'])
+        create_density_map(self.ori_dir_partA_train_img, self.ori_dir_partA_train_lab, self.ori_dir_partA_train_den, self.ori_dir_partA_train_fac, mode = self.metadata['gt_mode'])
+        create_density_map(self.ori_dir_partA_test_img, self.ori_dir_partA_test_lab, self.ori_dir_partA_test_den, self.ori_dir_partA_test_fac, mode = self.metadata['gt_mode'])
+        create_density_map(self.ori_dir_partB_train_img, self.ori_dir_partB_train_lab, self.ori_dir_partB_train_den, self.ori_dir_partB_train_fac, mode = self.metadata['gt_mode'])
+        create_density_map(self.ori_dir_partB_test_img, self.ori_dir_partB_test_lab, self.ori_dir_partB_test_den, self.ori_dir_partB_test_fac, mode = self.metadata['gt_mode'])
 
     def _check_before_run(self):
         """Check if all files are available before going deeper"""
@@ -326,12 +333,18 @@ class ShanghaiTech(object):
         aug_dir_partA_img = osp.join(self.augmented_dir_partA, "train_img")
         aug_dir_partA_den = osp.join(self.augmented_dir_partA, "train_den")
         aug_dir_partA_lab = osp.join(self.augmented_dir_partA, "train_lab")
+        test_dir_partA_img = osp.join(self.augmented_dir_partA, 'test_img')
+        test_dir_partA_den = osp.join(self.augmented_dir_partA, 'test_den')
+        test_dir_partA_lab = osp.join(self.augmented_dir_partA, 'test_lab')
         mkdir_if_missing(aug_dir_partA_img)
         mkdir_if_missing(aug_dir_partA_den)
         mkdir_if_missing(aug_dir_partA_lab)
+        mkdir_if_missing(test_dir_partA_img)
+        mkdir_if_missing(test_dir_partA_den)
+        mkdir_if_missing(test_dir_partA_lab)
 
         kwargs['name'] = 'shanghai-partA'
-        part_A_train_test = train_test_unit(aug_dir_partA_img, aug_dir_partA_den, self.ori_dir_partA_test_img, self.ori_dir_partA_test_den, kwargs.copy())
+        part_A_train_test = train_test_unit(aug_dir_partA_img, aug_dir_partA_den, test_dir_partA_img, test_dir_partA_den, kwargs.copy())
         self.train_test_set.append(part_A_train_test)
 
         if augment_data_A:
@@ -339,6 +352,13 @@ class ShanghaiTech(object):
             ori_lab_paths = [osp.join(self.ori_dir_partA_train_lab, file_name) for file_name in sorted(os.listdir(self.ori_dir_partA_train_lab))]
             ori_den_paths = [osp.join(self.ori_dir_partA_train_den, file_name) for file_name in sorted(os.listdir(self.ori_dir_partA_train_den))]
             augment(ori_img_paths, ori_lab_paths, ori_den_paths, aug_dir_partA_img, aug_dir_partA_lab, aug_dir_partA_den, slide_window_params, noise_params, light_params)
+
+            test_den_paths = [osp.join(self.ori_dir_partA_test_img, file_name) for file_name in sorted(os.listdir(self.ori_dir_partA_test_img))]
+            test_lab_paths = [osp.join(self.ori_dir_partA_test_lab, file_name) for file_name in sorted(os.listdir(self.ori_dir_partA_test_lab))]
+            test_img_paths = [osp.join(self.ori_dir_partA_test_den, file_name) for file_name in sorted(os.listdir(self.ori_dir_partA_test_den))]
+            copy_to_directory(test_den_paths, test_dir_partA_img)
+            copy_to_directory(test_lab_paths, test_dir_partA_den)
+            copy_to_directory(test_img_paths, test_dir_partA_lab)
 
         #shanghaiTech part B
         self.augmented_dir_partB = osp.join(self.ori_dir_partB, self.signature())
@@ -358,12 +378,18 @@ class ShanghaiTech(object):
         aug_dir_partB_img = osp.join(self.augmented_dir_partB, "train_img")
         aug_dir_partB_den = osp.join(self.augmented_dir_partB, "train_den")
         aug_dir_partB_lab = osp.join(self.augmented_dir_partB, "train_lab")
+        test_dir_partB_img = osp.join(self.augmented_dir_partB, 'test_img')
+        test_dir_partB_den = osp.join(self.augmented_dir_partB, 'test_den')
+        test_dir_partB_lab = osp.join(self.augmented_dir_partB, 'test_lab')
         mkdir_if_missing(aug_dir_partB_img)
         mkdir_if_missing(aug_dir_partB_den)
         mkdir_if_missing(aug_dir_partB_lab)
+        mkdir_if_missing(test_dir_partB_img)
+        mkdir_if_missing(test_dir_partB_den)
+        mkdir_if_missing(test_dir_partB_lab)
 
         kwargs['name'] = 'shanghai-partB'
-        part_B_train_test = train_test_unit(aug_dir_partB_img, aug_dir_partB_den, self.ori_dir_partB_test_img, self.ori_dir_partB_test_den, kwargs.copy())
+        part_B_train_test = train_test_unit(aug_dir_partB_img, aug_dir_partB_den, test_dir_partB_img, test_dir_partB_den, kwargs.copy())
         self.train_test_set.append(part_B_train_test)
 
         if augment_data_B:
@@ -371,6 +397,13 @@ class ShanghaiTech(object):
             ori_lab_paths = [osp.join(self.ori_dir_partB_train_lab, file_name) for file_name in sorted(os.listdir(self.ori_dir_partB_train_lab))]
             ori_den_paths = [osp.join(self.ori_dir_partB_train_den, file_name) for file_name in sorted(os.listdir(self.ori_dir_partB_train_den))]
             augment(ori_img_paths, ori_lab_paths, ori_den_paths, aug_dir_partB_img, aug_dir_partB_lab, aug_dir_partB_den, slide_window_params, noise_params, light_params)
+
+            test_den_paths = [osp.join(self.ori_dir_partB_test_img, file_name) for file_name in sorted(os.listdir(self.ori_dir_partB_test_img))]
+            test_lab_paths = [osp.join(self.ori_dir_partB_test_lab, file_name) for file_name in sorted(os.listdir(self.ori_dir_partB_test_lab))]
+            test_img_paths = [osp.join(self.ori_dir_partB_test_den, file_name) for file_name in sorted(os.listdir(self.ori_dir_partB_test_den))]
+            copy_to_directory(test_den_paths, test_dir_partB_img)
+            copy_to_directory(test_lab_paths, test_dir_partB_den)
+            copy_to_directory(test_img_paths, test_dir_partB_lab)
 
 """Create dataset"""
 

@@ -1,3 +1,6 @@
+from __future__ import absolute_import
+from __future__ import division
+
 import cv2
 import numpy as np
 import os
@@ -24,7 +27,7 @@ def save_results(img, gt_density_map, et_density_map, idx, output_dir):
     if gt_density_map.shape[1] != img.shape[1]:
         gt_density_map = cv2.resize(gt_density_map, (img.shape[1], img.shape[0]))
         et_density_map = cv2.resize(et_density_map, (img.shape[1], img.shape[0]))
-    
+
     fig = plt.figure(figsize = (30, 20))
     a = fig.add_subplot(1, 3, 1)
     plt.imshow(img, cmap='gray')
@@ -38,7 +41,7 @@ def save_results(img, gt_density_map, et_density_map, idx, output_dir):
     plt.imshow(et_density_map)
     a.set_title('estimated {:.2f}'.format(et_count))
     plt.axis('off')
-    
+
     img_file_name = os.path.join(output_dir, str(idx) + ".jpg")
     fig.savefig(img_file_name, bbox_inches='tight')
     fig.clf()

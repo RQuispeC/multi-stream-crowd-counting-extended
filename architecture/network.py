@@ -1,3 +1,6 @@
+from __future__ import absolute_import
+from __future__ import division
+
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
