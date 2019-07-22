@@ -353,12 +353,12 @@ class ShanghaiTech(object):
             ori_den_paths = [osp.join(self.ori_dir_partA_train_den, file_name) for file_name in sorted(os.listdir(self.ori_dir_partA_train_den))]
             augment(ori_img_paths, ori_lab_paths, ori_den_paths, aug_dir_partA_img, aug_dir_partA_lab, aug_dir_partA_den, slide_window_params, noise_params, light_params)
 
-            test_den_paths = [osp.join(self.ori_dir_partA_test_img, file_name) for file_name in sorted(os.listdir(self.ori_dir_partA_test_img))]
+            test_img_paths = [osp.join(self.ori_dir_partA_test_img, file_name) for file_name in sorted(os.listdir(self.ori_dir_partA_test_img))]
             test_lab_paths = [osp.join(self.ori_dir_partA_test_lab, file_name) for file_name in sorted(os.listdir(self.ori_dir_partA_test_lab))]
-            test_img_paths = [osp.join(self.ori_dir_partA_test_den, file_name) for file_name in sorted(os.listdir(self.ori_dir_partA_test_den))]
-            copy_to_directory(test_den_paths, test_dir_partA_img)
-            copy_to_directory(test_lab_paths, test_dir_partA_den)
-            copy_to_directory(test_img_paths, test_dir_partA_lab)
+            test_den_paths = [osp.join(self.ori_dir_partA_test_den, file_name) for file_name in sorted(os.listdir(self.ori_dir_partA_test_den))]
+            copy_to_directory(test_img_paths, test_dir_partA_img)
+            copy_to_directory(test_lab_paths, test_dir_partA_lab)
+            copy_to_directory(test_den_paths, test_dir_partA_den)
 
         #shanghaiTech part B
         self.augmented_dir_partB = osp.join(self.ori_dir_partB, self.signature())
@@ -398,12 +398,12 @@ class ShanghaiTech(object):
             ori_den_paths = [osp.join(self.ori_dir_partB_train_den, file_name) for file_name in sorted(os.listdir(self.ori_dir_partB_train_den))]
             augment(ori_img_paths, ori_lab_paths, ori_den_paths, aug_dir_partB_img, aug_dir_partB_lab, aug_dir_partB_den, slide_window_params, noise_params, light_params)
 
-            test_den_paths = [osp.join(self.ori_dir_partB_test_img, file_name) for file_name in sorted(os.listdir(self.ori_dir_partB_test_img))]
+            test_img_paths = [osp.join(self.ori_dir_partB_test_img, file_name) for file_name in sorted(os.listdir(self.ori_dir_partB_test_img))]
             test_lab_paths = [osp.join(self.ori_dir_partB_test_lab, file_name) for file_name in sorted(os.listdir(self.ori_dir_partB_test_lab))]
-            test_img_paths = [osp.join(self.ori_dir_partB_test_den, file_name) for file_name in sorted(os.listdir(self.ori_dir_partB_test_den))]
-            copy_to_directory(test_den_paths, test_dir_partB_img)
-            copy_to_directory(test_lab_paths, test_dir_partB_den)
-            copy_to_directory(test_img_paths, test_dir_partB_lab)
+            test_den_paths = [osp.join(self.ori_dir_partB_test_den, file_name) for file_name in sorted(os.listdir(self.ori_dir_partB_test_den))]
+            copy_to_directory(test_img_paths, test_dir_partB_img)
+            copy_to_directory(test_lab_paths, test_dir_partB_lab)
+            copy_to_directory(test_den_paths, test_dir_partB_den)
 
 """Create dataset"""
 
