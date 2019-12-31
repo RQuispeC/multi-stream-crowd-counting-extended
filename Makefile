@@ -9,7 +9,7 @@ augment-ucf-same:
 augment-ucf-knn:
 	$(run_ucf) --augment-only --force-augment --force-den-maps --gt-mode knn
 augment-ucf-face:
-	#python3 tiny_detection_mxnet.py -d ucf-cc-50 --save-plots --root-dir /workspace/quispe
+	python3 tiny_detection_mxnet.py -d ucf-cc-50 --save-plots --root-dir /workspace/
 	$(run_ucf) --augment-only --force-augment --force-den-maps --gt-mode face
 
 train-ucf-mcnn1-same:
@@ -80,7 +80,7 @@ augment-shanghai-same:
 augment-shanghai-knn:
 	$(run_shanghai) --augment-only --force-augment --force-den-maps --gt-mode knn
 augment-shanghai-face:
-	#python3 tiny_detection_mxnet.py -d shanghai-tech --save-plots --root-dir /workspace/quispe
+	python3 tiny_detection_mxnet.py -d shanghai-tech --save-plots --root-dir /workspace/
 	$(run_shanghai) --augment-only --force-augment --force-den-maps --gt-mode face
 
 train-shanghai-mcnn1-same:
